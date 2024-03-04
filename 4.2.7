@@ -1,0 +1,292 @@
+# This file contains pin mappings for the Creality "v4.2.7" board. To
+# use this config, during "make menuconfig" select the STM32F103 with
+# a "28KiB bootloader" and serial (on USART1 PA10/PA9) communication.
+
+# If you prefer a direct serial connection, in "make menuconfig"
+# select "Enable extra low-level configuration options" and select
+# serial (on USART3 PB11/PB10), which is broken out on the 10 pin IDC
+# cable used for the LCD module as follows:
+# 3: Tx, 4: Rx, 9: GND, 10: VCC
+
+# Flash this firmware by copying "out/klipper.bin" to a SD card and
+# turning on the printer with the card inserted. The firmware
+# filename must end in ".bin" and must not match the last filename
+# that was flashed.
+
+# See docs/Config_Reference.md for a description of parameters.
+
+[exclude_object]
+
+[include Screen.cfg]
+
+[temperature_sensor Raspberry_Pi]
+max_temp:60
+sensor_type: temperature_host
+sensor_path:/sys/class/thermal/thermal_zone0/temp
+
+[filament_switch_sensor Filament_Runout_Sensor]
+pause_on_runout: False
+runout_gcode:
+    M300 S440 P5000
+insert_gcode:
+    M300 S440 P5000
+event_delay: 3.0
+pause_delay: 0.5
+switch_pin: ^!PA7
+
+[mcu host]
+serial: /tmp/klipper_host_mcu
+
+[led Nozzle_Led]
+white_pin: host:gpio4
+cycle_time: 0.010
+hardware_pwm: False
+
+[stepper_x]
+step_pin: PB9
+dir_pin: PC2
+enable_pin: !PC3
+microsteps: 16
+rotation_distance: 40
+endstop_pin: ^PA5
+position_endstop: 0
+position_max: 246
+homing_speed: 50
+
+[stepper_y]
+step_pin: PB7
+dir_pin: PB8
+enable_pin: !PC3
+microsteps: 16
+rotation_distance: 40
+endstop_pin: ^PA6
+position_endstop: 0
+position_max: 235
+homing_speed: 50
+
+[stepper_z]
+step_pin: PB5
+dir_pin: !PB6
+enable_pin: !PC3
+microsteps: 16
+rotation_distance: 8
+endstop_pin: probe:z_virtual_endstop    # enable to use BLTouch
+position_min: -5                        # enable to use BLTouch
+position_max: 250
+
+[safe_z_home]                         # enable for BLTouch
+home_xy_position: 157.5,120.5
+speed: 100
+z_hop: 10
+z_hop_speed: 5
+
+[bltouch]                             # enable for BLTouch - fast-mode
+sensor_pin: ^PB1
+control_pin: PB0
+pin_up_touch_mode_reports_triggered: True
+probe_with_touch_mode: True
+x_offset: -52                         # modify as needed for bltouch location
+y_offset: -12                          # modify as needed for bltouch location
+z_offset: 2.6                         # modify as needed for bltouch or run PROBE_CALIBRATE
+speed: 10
+#samples: 3
+sample_retract_dist: 4              # Can be set lower, example 2.5 depending on height of bltouch from bed
+lift_speed: 40
+samples_tolerance_retries: 3
+speed: 10
+samples: 2
+
+[bed_mesh]
+speed: 80
+horizontal_move_z: 5
+mesh_min: 18,18
+mesh_max: 182,200
+probe_count: 5,5
+algorithm: bicubic
+
+[screws_tilt_adjust]
+screw1: 72.5, 41.5
+screw1_name: front left screw
+screw2: 238.5,41.5
+screw2_name: front right screw
+screw3: 238.5,212.5
+screw3_name: rear right screw
+screw4: 72.5,212.5
+screw4_name: rear left screw
+horizontal_move_z: 10
+speed: 50
+screw_thread: CW-M4
+
+[input_shaper]
+shaper_freq_x: 100
+shaper_freq_y: 100
+shaper_type: mzv
+
+[extruder]
+max_extrude_only_distance: 100.0
+step_pin: PB3
+dir_pin: PB4
+enable_pin: !PC3
+microsteps: 16
+rotation_distance: 22.7836
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: PA1
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC5
+#control: pid
+#pid_Kp: 21.527
+#pid_Ki: 1.063
+#pid_Kd: 108.982
+min_temp: -270
+max_temp: 265
+min_extrude_temp: 150
+
+[heater_bed]
+heater_pin: PA2
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC4
+#control: pid
+#pid_Kp: 54.027
+#pid_Ki: 0.770
+#pid_Kd: 948.182
+min_temp: -270
+max_temp: 130
+
+
+
+[mcu]
+serial: /dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.3:1.0-port0
+#serial: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+restart_method: command
+
+[printer]
+kinematics: cartesian
+max_velocity: 300
+max_accel: 2000
+max_accel_to_decel: 2000
+max_z_velocity: 5
+max_z_accel: 100
+
+[display]
+lcd_type: st7920
+cs_pin: PB12
+sclk_pin: PB13
+sid_pin: PB15
+encoder_pins: ^PB14, ^PB10
+click_pin: ^!PB2
+
+[save_variables]
+filename: ~/variables.cfg
+
+
+[gcode_macro G29]
+gcode:
+    G28
+    BED_MESH_CALIBRATE
+    G0 X0 Y0 Z10 F6000
+    BED_MESH_PROFILE save=default
+    #SAVE_CONFIG
+
+
+
+[gcode_macro START_PRINT]
+gcode:
+    {% set BED_TEMP = params.BED|float %}
+    {% set EXTRUDER_TEMP = params.EXTRUDER|float %}
+    {% set FILAMENT_TYPE = params.FILAMENT_TYPE|string %}
+    {% set FILAMENT_NAME = params.FILAMENT_NAME|string %}
+    # Start bed heating
+    SET_HEATER_TEMPERATURE HEATER=heater_bed TARGET={BED_TEMP}
+    SET_HEATER_TEMPERATURE HEATER=extruder TARGET={EXTRUDER_TEMP}
+    G90
+
+    {% if printer["bed_mesh"].profile_name == "" %}
+      G28
+      BED_MESH_CALIBRATE
+    {% else %}
+      G28
+      G1 Z10 F3000
+    {% endif %}
+    
+
+    BED_MESH_PROFILE LOAD=default
+    M190 S{BED_TEMP}
+    M109 S{EXTRUDER_TEMP}
+    G1 E2 F1500
+
+[gcode_macro END_PRINT]
+gcode:
+    {% set machine_depth = params.machine_depth|default(200)|float %}
+    G91 ;Relative positioning
+    G1 Z10 E-2 F2700 ;Retract a bit
+    G90 ;Absolute positioning
+    G1 X0 Y{machine_depth} ;Present print
+    M106 S0 ;Turn-off fan
+    M104 S0 ;Turn-off hotend
+    M140 S0 ;Turn-off bed
+
+    ##M84 X Y E ;Disable all steppers but Z
+
+
+[output_pin Beeper]
+pin: PC6
+pwm: True
+value: 0
+shutdown_value: 0
+cycle_time: 0.001
+[gcode_macro M300]
+gcode:
+ #    Use a default 1kHz tone if S is omitted.
+    {% set S = params.S|default(1000)|int %}
+    # Use a 10ms duration is P is omitted.
+    {% set P = params.P|default(100)|int %}
+    SET_PIN PIN=Beeper VALUE=0.5 CYCLE_TIME={ 1.0/S if S > 0 else 1 }
+    G4 P{P}
+    SET_PIN PIN=Beeper VALUE=0
+
+
+[gcode_macro BED_MESH_CALIBRATE_IF_NEEDED]
+gcode:
+  {% if printer["bed_mesh"].profile_name == "" %}
+    G28
+    BED_MESH_CALIBRATE
+  {% endif %}
+
+
+[delayed_gcode Welcome_1]
+initial_duration: 0.1
+gcode:
+  #SET_LED LED=Nozzle_Led WHITE=1 SYNC=0 TRANSMIT=1
+  M300 S740
+
+[delayed_gcode Welcome_2]
+initial_duration: 0.7
+gcode:
+  M300 S840
+
+[delayed_gcode Welcome_3]
+initial_duration: 0.8
+gcode:
+  M300 S840
+  SET_FILAMENT_SENSOR SENSOR=Filament_Runout_Sensor ENABLE=0
+
+
+[include timelapse.cfg]
+
+[include mainsail.cfg]
+
+#*# <---------------------- SAVE_CONFIG ---------------------->
+#*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
+#*#
+#*# [extruder]
+#*# control = pid
+#*# pid_kp = 24.219
+#*# pid_ki = 1.129
+#*# pid_kd = 129.876
+#*#
+#*# [heater_bed]
+#*# control = pid
+#*# pid_kp = 75.900
+#*# pid_ki = 2.135
+#*# pid_kd = 674.560
