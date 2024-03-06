@@ -2,8 +2,6 @@
 
 [include mainsail.cfg]
 
-[include Screen.cfg]
-
 [exclude_object]
 
 [temperature_sensor Apple_Pi] # Showing the Pi's temperature on the graph.
