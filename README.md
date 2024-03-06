@@ -8,3 +8,6 @@ Create a new file (in the web interface like mainsail) called customized.cfg and
 If using a BLTouch/CRTouch, uncomment everything between the emojis in the 'customized' file, change the pin for the endstop_pin to 'probe:z_virtual_endstop', and replace 'position_endstop: 0.0' with 'position_min: -5'.
 
 ![image](https://github.com/Pigensworth/Ender-3-or-3-pro-Klipper-printer.cfg/assets/136399546/16c26fe0-550d-4519-a990-4565728e6357)
+
+# Screen
+If you want my screen layout customization, then copy everything from the 'Screen' file and paste it at the end of the 'customized' file.
