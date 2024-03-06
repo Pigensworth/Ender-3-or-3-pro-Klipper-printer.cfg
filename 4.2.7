@@ -219,7 +219,7 @@ gcode:
 
 [gcode_macro END_PRINT]
 gcode:
-    {% set machine_depth = params.machine_depth|default(200)|float %}
+    {% set machine_depth = params.machine_depth|default(220)|float %}
     G91 ;Relative positioning
     G1 Z10 E-2 F2700 ;Retract a bit
     G90 ;Absolute positioning
@@ -251,8 +251,11 @@ gcode:
 [gcode_macro BED_MESH_CALIBRATE_IF_NEEDED]
 gcode:
   {% if printer["bed_mesh"].profile_name == "" %}
+     G28
+     BED_MESH_CALIBRATE
+  {% else %}
     G28
-    BED_MESH_CALIBRATE
+    G1 Z10 F3000
   {% endif %}
 
 
