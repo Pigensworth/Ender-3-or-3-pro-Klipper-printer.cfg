@@ -19,14 +19,6 @@ white_pin: host:gpio4
 cycle_time: 0.010
 hardware_pwm: False
 
-[display] # I think this enables the display, but I'm not sure.
-lcd_type: st7920
-cs_pin: PB12
-sclk_pin: PB13
-sid_pin: PB15
-encoder_pins: ^PB14, ^PB10
-click_pin: ^!PB2
-
 [delayed_gcode Welcome_1] # These three welcomes will make the printer beep when it starts up.
 initial_duration: 0.1
 gcode:
