@@ -112,9 +112,8 @@ gcode:
     M84 X Y E ;Disable all steppers but Z
 
 
-[output_pin Beeper] # Lets you use the beeper on the screen.
+[pwm_cycle_time Beeper] # Lets you use the beeper on the screen.
 pin: PC6
-pwm: True
 value: 0
 shutdown_value: 0
 cycle_time: 0.001
