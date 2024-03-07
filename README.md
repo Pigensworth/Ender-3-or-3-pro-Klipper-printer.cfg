@@ -1,5 +1,9 @@
 # How to use
-Create a new file (in the web interface like mainsail) called customized.cfg and put all the contents from 'customized' in it. Then add '[include customized.cfg]' to the printer.cfg (if you don't have one then try to find one in the config examples).
+### If you already have a printer.cfg file
+Create a new file (in the web interface like mainsail) called customized.cfg and put all the contents from 'customized' in it. Then add '[include customized.cfg]' to the printer.cfg.
+### If you don't have a printer.cfg file
+If you're using a Creality 4.2.2 or 4.2.7 board then you can use my presets, otherwise find one in the config examples in Mainsail and follow the steps above. If you don't want to make another file, you can put everything from 'customized' in any blank space in your printer.cfg, just make sure it has space above and below so it's not included in any parts, like the extruder or a stepper. Don't forget to add [include mainsail.cfg] to it too.
+
 
 ![image](https://github.com/Pigensworth/Ender-3-or-3-pro-Klipper-printer.cfg/assets/136399546/49a9e94d-1046-4306-ae53-e3960f0ec464)
 
