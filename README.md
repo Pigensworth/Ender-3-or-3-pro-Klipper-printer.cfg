@@ -14,3 +14,6 @@ If you want my screen layout customization, then copy everything from the 'Scree
 
 # Slicer Start & End
 This is what to put in the slicer start g-code and end g-code. It's for Cura because that's what I use, so it would probably work with Creality Slicer or any others based off of Cura, but I don't know if it works with anything else. If you get an error like "Error evaluating 'gcode_macro START_PRINT:gcode': jinja2.exceptions.UndefinedError: 'dict object' has no attribute 'BED'", that means there's something wrong with the start g-code, because the slicer isn't passing the value of the variables to the g-code and therefore to Klipper.
+
+# Presets
+I put on a preset for the 4.2.7 board (the silent one) with a BLTouch, and one for the 4.2.2 (the loud one that I think is on the Ender 3) without a BLTouch. Neither of them have the screen layout mod, but they both have my customization. I don't know for sure if the 4.2.2 one works, because I found mixed pin mappings for it, but neoyagami used it, so it should work. Thanks to neoyagami for his config file, that's what the 4.2.2 is based on. His can be found at https://gist.github.com/neoyagami/5f431928997dbf255e84e4c937983e8e.
