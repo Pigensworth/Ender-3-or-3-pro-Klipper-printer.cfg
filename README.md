@@ -11,3 +11,6 @@ If using a BLTouch/CRTouch, uncomment everything between the emojis in the 'cust
 
 # Screen
 If you want my screen layout customization, then copy everything from the 'Screen' file and paste it at the end of the 'customized.cfg' file. It disables the Octoprint section (since I don't use Octoprint), shows the tune section and start print all the time, adds a cancel print, and changes the cooldown from a list of cooldown heater, cooldown bed, and cooldown all to simply cooldown all.
+
+# Slicer Start & End
+This is what to put in the slicer start g-code and end g-code. It's for Cura because that's what I use, so it would probably work with Creality Slicer or any others based off of Cura, but I don't know if it works with anything else. If you get an error like "Error evaluating 'gcode_macro START_PRINT:gcode': jinja2.exceptions.UndefinedError: 'dict object' has no attribute 'BED'", that means there's something wrong with the start g-code, because the slicer isn't passing the value of the variables to the g-code and therefore to Klipper.
