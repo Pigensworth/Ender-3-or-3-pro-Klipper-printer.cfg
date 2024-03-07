@@ -1,0 +1,15 @@
+START_PRINT EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0}
+;Filament weight = {filament_weight}
+;Nozzle diameter = {machine_nozzle_size}
+;Filament type = {material_type}
+;Filament name = {material_name}
+;Extruder temp={material_print_temperature_layer_0}
+;FILAMENT_TYPE={material_type}
+;FILAMENT_NAME={material_name}
+;machine_depth={machine_depth}
+
+
+
+
+
+END_PRINT
