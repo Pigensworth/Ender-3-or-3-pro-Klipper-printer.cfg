@@ -162,31 +162,6 @@ gcode:
     SET_HEATER_TEMPERATURE HEATER=extruder TARGET={EXTRUDER_TEMP}
     G90
 
-# The chunk of code below this will change the pressure advance per material name.
-# If you want to use it then uncomment it and change the names and types to whatever you're using.
-# Don't forget to also sset the pressure advance values too.
-    {% if FILAMENT_TYPE == "PLA" %}
-      {% if FILAMENT_NAME == "Purple" %}
-        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
-      {% elif FILAMENT_NAME == "White" %}
-        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
-      {% elif FILAMENT_NAME == "Green" %}
-        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.21
-      {% endif %}
-    {% elif FILAMENT_TYPE == "Nylon" %}
-      {% if FILAMENT_NAME == "Black" %}
-        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
-      {% endif %}
-    {% elif FILAMENT_TYPE == "PETG"%}
-      {% if FILAMENT_NAME == "Black" %}
-        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
-      {% elif FILAMENT_NAME == "Translucent" %}
-        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
-      {% endif %} 
-    {% else %}
-      SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0
-    {% endif %}
-
 
     {% if printer["bed_mesh"].profile_name == "" %} # This will check if there's any bed profile loaded, and if not then it will probe and call it 'default'.
       G28
