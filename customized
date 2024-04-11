@@ -56,7 +56,7 @@ gcode:
     SET_HEATER_TEMPERATURE HEATER=extruder TARGET={EXTRUDER_TEMP}
     G90
 
-# The chunk of code below this will change the pressure advance per material name.
+# The chunk of code below this will change the pressure advance per material name. I didn't get it working yet, so it's still a work in progress.
 # If you want to use it then uncomment it and change the names and types to whatever you're using.
 # Don't forget to also sset the pressure advance values too.
 #    {% if FILAMENT_TYPE == "PLA" %}
