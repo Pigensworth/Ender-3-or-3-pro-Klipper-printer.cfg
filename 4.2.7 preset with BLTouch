@@ -46,7 +46,7 @@ dir_pin: !PB6
 enable_pin: !PC3
 microsteps: 16
 rotation_distance: 8
-endstop_pin: ^PC4    # replace with 'endstop_pin: probe:z_virtual_endstop' to use BLTouch
+endstop_pin: probe:z_virtual_endstop
 position_endstop: 0.0   # replace with 'position_min: -5' to use BLTouch
 position_max: 250
 
@@ -96,6 +96,182 @@ max_accel: 2000
 max_accel_to_decel: 2000
 max_z_velocity: 5
 max_z_accel: 100
+
+[include timelapse.cfg]
+
+[include mainsail.cfg]
+
+[exclude_object]
+
+[temperature_sensor Apple_Pi] # Showing the Pi's temperature on the graph.
+max_temp:60
+sensor_type: temperature_host
+sensor_path:/sys/class/thermal/thermal_zone0/temp
+
+[mcu host] # Makeing the Pi an MCU so it's gpio pins can be used and it's temperature retrieved.
+serial: /tmp/klipper_host_mcu
+
+[led Nozzle_Led] # An LED wired to gpio 4 on the Raspberry Pi.
+white_pin: host:gpio4
+cycle_time: 0.010
+hardware_pwm: False
+
+[delayed_gcode Welcome_1] # These three welcomes will make the printer beep when it starts up.
+initial_duration: 0.1
+gcode:
+  M300 S740
+
+[delayed_gcode Welcome_2]
+initial_duration: 0.7
+gcode:
+  M300 S840
+
+[delayed_gcode Welcome_3]
+initial_duration: 0.8
+gcode:
+  M300 S840
+
+
+
+[gcode_macro G29] # Making G29 probe the bed.
+gcode:
+    G28
+    BED_MESH_CALIBRATE
+    G0 X0 Y0 Z10 F6000
+    BED_MESH_PROFILE save=default
+    #SAVE_CONFIG
+
+
+
+[gcode_macro START_PRINT] # This is my start print macro. Instead of purging along the edge I usually just do a skirt in the slicer.
+gcode:
+    # These set variables with data retrieved from the slicer.
+    {% set BED_TEMP = params.BED|float %}
+    {% set EXTRUDER_TEMP = params.EXTRUDER|float %}
+    {% set FILAMENT_TYPE = params.FILAMENT_TYPE|string %}
+    {% set FILAMENT_NAME = params.FILAMENT_NAME|string %}
+    # Start bed heating
+    SET_HEATER_TEMPERATURE HEATER=heater_bed TARGET={BED_TEMP}
+    SET_HEATER_TEMPERATURE HEATER=extruder TARGET={EXTRUDER_TEMP}
+    G90
+
+# The chunk of code below this will change the pressure advance per material name. I didn't get it working yet, so it's still a work in progress.
+# If you want to use it then uncomment it and change the names and types to whatever you're using.
+# Don't forget to also sset the pressure advance values too.
+#    {% if FILAMENT_TYPE == "PLA" %}
+#      {% if FILAMENT_NAME == "Purple" %}
+#        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
+#      {% elif FILAMENT_NAME == "White" %}
+#        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
+#      {% elif FILAMENT_NAME == "Green" %}
+#        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.21
+#      {% endif %}
+#    {% elif FILAMENT_TYPE == "Nylon" %}
+#      {% if FILAMENT_NAME == "Black" %}
+#        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
+#      {% endif %}
+#    {% elif FILAMENT_TYPE == "PETG"%}
+#      {% if FILAMENT_NAME == "Black" %}
+#        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
+#      {% elif FILAMENT_NAME == "Translucent" %}
+#        SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0.276
+#      {% endif %} 
+#    {% else %}
+#      SET_PRESSURE_ADVANCE EXTRUDER=extruder ADVANCE=0
+#    {% endif %}
+
+
+    {% if printer["bed_mesh"].profile_name == "" %} # This will check if there's any bed profile loaded, and if not then it will probe and call it 'default'.
+      G28
+      BED_MESH_CALIBRATE
+      BED_MESH_PROFILE save=default
+      BED_MESH_PROFILE LOAD=default
+    {% else %}
+      G28
+      G1 Z10 F3000
+    {% endif %}
+
+    M190 S{BED_TEMP} # Basically just waiting till everything is up to temp.
+    M109 S{EXTRUDER_TEMP}
+    G92 E0 # This sets the current position of the extruder to 0.
+    G1 E2 F1500 # Extruding 2mm to counteract for the filament oozing while heating up.
+
+[gcode_macro END_PRINT] # An end print macro that retracts, gives you the print, and turns everything off.
+gcode:
+    {% set machine_depth = params.machine_depth|default(220)|float %}
+    G91 ;Relative positioning
+    G1 Z10 E-2 F2700 ;Retract a bit
+    G90 ;Absolute positioning
+
+    G1 X0 Y{machine_depth} ;Present print
+    M106 S0 ;Turn-off fan
+    M104 S0 ;Turn-off hotend
+    M140 S0 ;Turn-off bed
+
+    M84 X Y E ;Disable all steppers but Z
+
+
+[pwm_cycle_time Beeper] # Lets you use the beeper on the screen.
+pin: PC6
+value: 0
+shutdown_value: 0
+cycle_time: 0.001
+[gcode_macro M300]
+gcode:
+ #    Use a default 1kHz tone if S is omitted.
+    {% set S = params.S|default(1000)|int %}
+    # Use a 10ms duration is P is omitted.
+    {% set P = params.P|default(100)|int %}
+    SET_PIN PIN=Beeper VALUE=0.5 CYCLE_TIME={ 1.0/S if S > 0 else 1 }
+    G4 P{P}
+    SET_PIN PIN=Beeper VALUE=0
+
+# Everything between the emojis is for a BLTouch/CRTouch. Uncomment it all if you're using one.
+# 😮😮😮🫠🫠🫠🤔🤔🤔😒😒😒😂😂😂
+
+#[safe_z_home]                         # enable for BLTouch
+#home_xy_position: 157.5,120.5
+#speed: 100
+#z_hop: 10
+#z_hop_speed: 5
+
+#[bltouch]                             # enable for BLTouch - fast-mode
+#sensor_pin: ^PB1
+#control_pin: PB0
+#pin_up_touch_mode_reports_triggered: True
+#probe_with_touch_mode: True
+#x_offset: -52                         # modify as needed for bltouch location
+#y_offset: -12                          # modify as needed for bltouch location
+#z_offset: 2.75                         # ADJUST THIS FOR PROPER NOZZLE HEIGHT!!! It adjusts the offset of the probe from the nozzle tip. Modify as needed for bltouch or run PROBE_CALIBRATE
+#speed: 10
+#sample_retract_dist: 4              # Can be set lower, example 2.5 depending on height of bltouch from bed
+#lift_speed: 40
+#samples_tolerance_retries: 3
+#speed: 10
+#samples: 2
+
+#[bed_mesh]
+#speed: 80
+#horizontal_move_z: 5
+#mesh_min: 18,18
+#mesh_max: 182,200
+#probe_count: 5,5
+#algorithm: bicubic
+
+#[screws_tilt_adjust]
+#screw1: 72.5,212.5
+#screw1_name: rear left screw
+#screw2: 72.5, 41.5
+#screw2_name: front left screw
+#screw3: 238.5,41.5
+#screw3_name: front right screw
+#screw4: 238.5,212.5
+#screw4_name: rear right screw
+#horizontal_move_z: 10
+#speed: 50
+#screw_thread: CW-M4
+
+# 😂😂😂😒😒😒🤔🤔🤔🫠🫠🫠😮😮😮
 
 [board_pins] # If it throws an error about this then just comment them out. I don't know what they do but it worked once I commented them.
 aliases:
